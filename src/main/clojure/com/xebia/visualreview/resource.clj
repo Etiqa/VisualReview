@@ -372,6 +372,13 @@
     :handle-ok (fn [ctx]
                  (io/get-file (:image-path ctx)))))
 
+(defn baseline-info [suite-id]
+  (json-resource
+    :allowed-methods [:get]
+    :handle-ok (fn [ctx]
+                 (baseline/get-all-baseline-screenshots (tx-conn ctx) suite-id "master"))))
+
+
 ;; Cleanup
 (defn cleanup []
   (resource
