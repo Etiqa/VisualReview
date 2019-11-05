@@ -18,6 +18,7 @@
   (:require [com.xebia.visualreview.service.persistence.util :as putil]
             [slingshot.slingshot :as ex]
             [clojure.java.jdbc :as j]
+            [clojure.tools.logging :as log]            
             [cheshire.core :as json])
   (:import (java.sql SQLException)))
 
@@ -31,13 +32,14 @@
      WHERE tr.suite_id = ? AND br.name = ? AND screenshot.screenshot_name = ?
      AND screenshot.properties = ?" suite-id branch-name screenshot-name (json/generate-string properties)]))
 
-(defn get-all-baseline-screenshots [conn suite-id branch-name]
+(defn get-all-baseline-screenshots [conn project-id suite-id branch-name]
   (putil/query conn
                       ["SELECT screenshot.* FROM baseline_tree tr
      JOIN baseline_branch br ON br.baseline_tree = tr.id
      JOIN bl_node_screenshot bl_ss ON bl_ss.baseline_node = br.head
      JOIN screenshot ON screenshot.id = bl_ss.screenshot_id
-     WHERE tr.suite_id = ? AND br.name = ?" suite-id branch-name]))
+     JOIN suite ON suite.id = tr.suite_id
+     WHERE suite.project_id = ? AND tr.suite_id = ? AND br.name = ?" project-id suite-id branch-name]))
 
 (defn get-baseline-screenshot-by-diff-id [conn diff-id]
   (putil/query-single conn

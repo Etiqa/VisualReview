@@ -1,6 +1,6 @@
 {
  ;; Server
- :server-port "7000"
+ :server-port "7001"
 
  ;; Database
  :db-uri "file:./.visualreview/visualreview.db"

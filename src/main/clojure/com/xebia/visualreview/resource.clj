@@ -129,7 +129,8 @@
 ;;;;;;;;;;; Runs ;;;;;;;;;;;
 (def ^:private run-create-schema
   {:projectName [String []]
-   :suiteName   [String [::v/non-empty]]})
+   :suiteName   [String [::v/non-empty]]
+   :branchName  [String [::v/non-empty]]})
 
 (defn run-resource [run-id]
   (json-resource
@@ -178,8 +179,10 @@
                      {::suite suite})))
     :can-post-to-missing? false
     :post! (fn [ctx]
-             (let [new-run-id (run/create-run! (tx-conn ctx) (:id (::suite ctx)))
-                   run (run/get-run (tx-conn ctx) new-run-id)]
+             (let [
+                   new-run-id (run/create-run! (tx-conn ctx) (:id (::suite ctx)) (-> ctx ::data :branch-name))
+                   run (run/get-run (tx-conn ctx) new-run-id)
+                   ]
                {::run run}))
     :handle-created ::run
     :handle-ok ::runs))
@@ -372,11 +375,11 @@
     :handle-ok (fn [ctx]
                  (io/get-file (:image-path ctx)))))
 
-(defn baseline-info [suite-id]
+(defn baseline-info [project-id suite-id branch-name]
   (json-resource
     :allowed-methods [:get]
     :handle-ok (fn [ctx]
-                 (baseline/get-all-baseline-screenshots (tx-conn ctx) suite-id "master"))))
+                 (baseline/get-all-baseline-screenshots (tx-conn ctx) project-id suite-id branch-name))))
 
 
 ;; Cleanup
